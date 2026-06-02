@@ -1,0 +1,9 @@
+{
+  "name": "UrbanFlow",
+  "short_name": "UrbanFlow",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#071114",
+  "theme_color": "#00a6a6",
+  "icons": []
+}

@@ -1,0 +1,33 @@
+# Plan du dossier
+
+```text
+backend/
+  app/
+    core/
+    models/
+    routers/
+    schemas/
+    database.py
+    main.py
+  requirements.txt
+  .env.example
+frontend/
+  public/
+  src/
+    components/
+    context/
+    lib/
+    pages/
+data/
+  schema.sql
+docs/
+  01-cadrage-mvp.md
+  02-stack-technique.md
+  03-architecture.md
+  04-plan-du-dossier.md
+  05-apis.md
+  06-backlog.md
+  07-securite.md
+  08-points-vigilance.md
+  09-deploiement.md
+```
