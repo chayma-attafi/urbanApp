@@ -24,5 +24,5 @@
 
 ## Base de donnees
 
-Render ne fournit pas MySQL gratuitement par defaut. Pour la production, prevoir une base MySQL externe ou adapter le backend vers PostgreSQL si la plateforme cible l'impose.
+La base PostgreSQL est hebergee sur Supabase (plan gratuit) et accessible via `DATABASE_URL`, independamment de l'hebergeur du backend (Render).
 

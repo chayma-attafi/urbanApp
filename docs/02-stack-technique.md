@@ -12,20 +12,20 @@
 
 - FastAPI
 - SQLAlchemy
-- PyMySQL
+- psycopg2 (PostgreSQL)
 - Pydantic / pydantic-settings
 - JWT avec `python-jose`
 - Hash mot de passe avec `passlib` et Argon2/Bcrypt
 
 ## Donnees
 
-- MySQL via XAMPP
-- Base locale : `urban_app`
-- Initialisation possible via `data/schema.sql`
+- PostgreSQL via Supabase
+- Connexion via `DATABASE_URL` (chaine fournie par Supabase)
+- Tables creees automatiquement au lancement via SQLAlchemy
 
 ## Deploiement prevu
 
 - Frontend : Vercel
 - Backend : Render
-- Base : MySQL externe a definir pour production
+- Base : Supabase (PostgreSQL managed)
 

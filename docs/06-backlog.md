@@ -4,7 +4,7 @@
 
 - Installer les dependances frontend/backend.
 - Configurer `.env` avec un vrai `JWT_SECRET_KEY`.
-- Verifier XAMPP MySQL et la creation des tables.
+- Configurer `DATABASE_URL` (Supabase) et verifier la creation des tables.
 - Finaliser l'UI de la carte et les formulaires.
 
 ## Priorite 2

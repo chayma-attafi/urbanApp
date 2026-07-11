@@ -8,7 +8,7 @@ Navigateur/PWA
   -> API client fetch credentials include
   -> FastAPI /api/*
   -> SQLAlchemy
-  -> MySQL XAMPP
+  -> PostgreSQL (Supabase)
 ```
 
 ## Backend

@@ -1,6 +1,4 @@
-CREATE DATABASE IF NOT EXISTS urban_app CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE urban_app;
-
--- Les tables applicatives sont creees par SQLAlchemy au lancement du backend.
--- Ce fichier garde le point d'entree SQL pour XAMPP/phpMyAdmin et les futures migrations.
-
+-- Supabase fournit deja une base PostgreSQL prete a l'emploi (database "postgres").
+-- Les tables applicatives sont creees automatiquement par SQLAlchemy au lancement du backend
+-- (voir backend/app/main.py -> Base.metadata.create_all).
+-- Ce fichier garde le point d'entree SQL pour de futures migrations manuelles.

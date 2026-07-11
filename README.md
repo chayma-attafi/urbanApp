@@ -1,6 +1,6 @@
 # Urban Mobility PWA
 
-Application web/PWA de cadrage Titre 6 CDSD : front React/TypeScript/Vite, backend FastAPI, base MySQL XAMPP, authentification JWT par cookie HttpOnly, routes protegees et documentation projet.
+Application web/PWA de cadrage Titre 6 CDSD : front React/TypeScript/Vite, backend FastAPI, base PostgreSQL (Supabase), authentification JWT par cookie HttpOnly, routes protegees et documentation projet.
 
 ## Structure
 
@@ -35,7 +35,7 @@ npm install
 npm run dev
 ```
 
-XAMPP/MySQL : demarrer MySQL, puis creer la base `urban_app` ou laisser le backend tenter de la creer au lancement.
+Supabase : creer un projet sur supabase.com, copier la chaine de connexion (Project Settings > Database > Connection string) dans `DATABASE_URL` du fichier `.env` du backend, puis lancer le backend pour que les tables se creent automatiquement.
 
 Documentation detaillee : voir `docs/`.
 

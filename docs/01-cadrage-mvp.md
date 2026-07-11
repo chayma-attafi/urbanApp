@@ -9,7 +9,7 @@ Construire une application web/PWA de mobilite urbaine presentable pour un proje
 - Authentification : inscription, connexion, deconnexion, recuperation session, profil.
 - Routes protegees : carte, dashboard, profil, parametres.
 - Backend API : `auth`, `profile`, `transport`, `routing`, `demo`.
-- Base de donnees : MySQL via XAMPP/phpMyAdmin.
+- Base de donnees : PostgreSQL via Supabase.
 - Deploiement cible : Vercel pour le front, Render pour le back.
 
 ## Hors perimetre MVP
