@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-import { Activity, Lock, Mail, UserPlus } from "lucide-react";
+import { Lock, Mail, UserPlus } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export function AuthPage({ mode }: { mode: "login" | "register" }) {
@@ -44,7 +44,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
     <main className="auth-page">
       <section className="auth-visual">
         <div className="brand-block auth-brand">
-          <span className="brand-mark"><Activity size={22} /></span>
+          <img src="/icons/icon-512.svg" alt="UrbanFlow" width={36} height={36} style={{ borderRadius: 8, display: "block" }} />
           <div>
             <strong>UrbanFlow</strong>
             <small>Mobility</small>

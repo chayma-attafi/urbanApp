@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
 from app.core.middleware import RateLimitMiddleware, SecurityHeadersMiddleware
 from app.database import Base, engine
-from app.routers import auth, demo, profile, routing, transport
+from app.routers import ai, auth, demo, profile, routing, transport
 
 Base.metadata.create_all(bind=engine)
 
@@ -25,6 +25,7 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization"],
 )
 
+app.include_router(ai.router, prefix="/api/ai", tags=["ai"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(profile.router, prefix="/api/profile", tags=["profile"])
 app.include_router(transport.router, prefix="/api/transport", tags=["transport"])

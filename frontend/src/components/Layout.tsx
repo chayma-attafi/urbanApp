@@ -1,4 +1,4 @@
-import { Activity, BarChart3, LogOut, Map, Settings, User } from "lucide-react";
+import { BarChart3, LogOut, Map, Settings, User } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { BACKEND_URL } from "../lib/api";
@@ -28,7 +28,7 @@ export function Layout() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand-block">
-          <span className="brand-mark"><Activity size={20} /></span>
+          <img src="/icons/icon-512.svg" alt="UrbanFlow" width={36} height={36} style={{ borderRadius: 8, display: "block" }} />
           <div>
             <strong>UrbanFlow</strong>
             <small>Mobility</small>

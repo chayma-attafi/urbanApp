@@ -57,5 +57,10 @@ export const api = {
   dashboard: () => request<Record<string, unknown>>("/demo/dashboard"),
   transportModes: () => request<Array<{ id: string; label: string; status: string }>>("/transport/modes"),
   routeEstimate: (origin: string, destination: string) =>
-    request<Record<string, unknown>>(`/routing/estimate?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`)
+    request<Record<string, unknown>>(`/routing/estimate?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`),
+  aiSuggest: (payload: { origin: string; destination: string; priority: string; modes: string[] }) =>
+    request<{ suggestion: string; steps: string[]; co2_estimate: string; tip: string }>(
+      "/ai/suggest",
+      { method: "POST", body: JSON.stringify(payload) }
+    ),
 };

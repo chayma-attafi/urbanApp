@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="42" fill="#22C55E"/>
+  <path d="M27 110 Q55 86 96 110 Q137 134 165 110" stroke="rgba(255,255,255,0.35)" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M27 94 Q55 70 96 94 Q137 118 165 94" stroke="rgba(255,255,255,0.6)" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M27 78 Q55 54 96 78 Q137 102 165 78" stroke="white" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <text x="96" y="158" text-anchor="middle" fill="white" font-family="ui-sans-serif,system-ui,sans-serif" font-size="38" font-weight="800" letter-spacing="-1">UF</text>
+</svg>

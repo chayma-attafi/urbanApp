@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     DATABASE_PASSWORD: str = ""
     DATABASE_NAME: str = "postgres"
 
+    GROQ_API_KEY: str = ""
+    GROQ_MODEL: str = "meta-llama/llama-4-scout-17b-16e-instruct"
+
     JWT_SECRET_KEY: str = Field(..., min_length=32)
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60

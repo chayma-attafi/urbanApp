@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#22C55E"/>
+  <!-- flow waves -->
+  <path d="M72 290 Q148 230 256 290 Q364 350 440 290" stroke="rgba(255,255,255,0.35)" stroke-width="18" fill="none" stroke-linecap="round"/>
+  <path d="M72 248 Q148 188 256 248 Q364 308 440 248" stroke="rgba(255,255,255,0.6)" stroke-width="22" fill="none" stroke-linecap="round"/>
+  <path d="M72 206 Q148 146 256 206 Q364 266 440 206" stroke="white" stroke-width="26" fill="none" stroke-linecap="round"/>
+  <!-- UF wordmark -->
+  <text x="256" y="420" text-anchor="middle" fill="white" font-family="ui-sans-serif,system-ui,sans-serif" font-size="100" font-weight="800" letter-spacing="-4">UF</text>
+</svg>

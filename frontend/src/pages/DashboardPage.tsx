@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import { Activity, Clock, Route, Users } from "lucide-react";
 import { api } from "../lib/api";
 
-const icons = [Users, Route, Clock, Activity];
 const flowBars = [72, 48, 83, 61, 37, 94, 56, 68];
 
 export function DashboardPage() {
@@ -17,16 +15,13 @@ export function DashboardPage() {
       <p className="eyebrow">Dashboard</p>
       <h2>Flux urbains</h2>
       <section className="list-row">
-        {Object.entries(stats).map(([key, value], index) => {
-          const Icon = icons[index % icons.length];
-          return (
+        {Object.entries(stats).map(([key, value]) => (
           <article className="metric-card" key={key}>
-            <Icon size={20} />
+            <img src="/icons/icon-192.svg" alt="UrbanFlow" width={28} height={28} style={{ borderRadius: 6 }} />
             <span>{key.replaceAll("_", " ")}</span>
             <strong>{String(value)}</strong>
           </article>
-          );
-        })}
+        ))}
       </section>
       <section className="flow-dashboard">
         <article className="flow-card wide">
