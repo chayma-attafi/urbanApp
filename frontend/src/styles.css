@@ -1,3 +1,5 @@
+@import "leaflet/dist/leaflet.css";
+
 /* ================================================================
    URBANFLOW MOBILITY — Light Theme
    White backgrounds · Emerald green brand · Clean professional UI
@@ -352,14 +354,10 @@ button:hover {
    MAP SURFACE
    ================================================================ */
 .map-surface {
-  background:
-    radial-gradient(ellipse at 25% 65%, rgba(34 197 94 / 8%) 0%, transparent 50%),
-    radial-gradient(ellipse at 75% 20%, rgba(245 158 11 / 5%) 0%, transparent 44%),
-    #EDF7EF;
   border: 1px solid var(--line);
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0 0 0 / 6%);
-  min-height: 460px;
+  height: 460px;
   overflow: hidden;
   position: relative;
 }
@@ -533,6 +531,40 @@ button:hover {
 .ai-form { display: grid; gap: 14px; }
 
 .ai-inputs { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+
+.input-with-btn {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--line-hi);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg);
+}
+.input-with-btn input {
+  flex: 1;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent;
+  outline: none;
+  box-shadow: none !important;
+}
+.locate-btn {
+  flex-shrink: 0;
+  background: var(--green-dim);
+  border: none;
+  border-left: 1px solid var(--line-hi);
+  border-radius: 0;
+  color: var(--green-dark);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  height: 100%;
+  transition: all .15s;
+}
+.locate-btn:hover:not(:disabled) { background: var(--green); color: #fff; }
+.locate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .ai-priority { display: flex; gap: 8px; flex-wrap: wrap; }
 

@@ -1,13 +1,37 @@
 import { FormEvent, useEffect, useState } from "react";
-import { Bike, Bus, Footprints, Leaf, Loader, MapPin, Navigation, Sparkles, TrainFront, Zap } from "lucide-react";
+import { Bike, Bus, Footprints, Leaf, Loader, LocateFixed, Navigation, Sparkles, TrainFront, Zap } from "lucide-react";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
+import L from "leaflet";
 import { api } from "../lib/api";
 
-const modeIcons = {
-  metro: TrainFront,
-  bus: Bus,
-  bike: Bike,
-  walk: Footprints
-};
+function makeIcon(bg: string, text: string, anchor: [number, number]) {
+  return L.divIcon({
+    className: "",
+    html: `<div style="background:${bg};color:#fff;padding:6px 11px;border-radius:9px;font-size:12px;font-weight:700;box-shadow:0 3px 10px rgba(0,0,0,.25);white-space:nowrap">${text}</div>`,
+    iconAnchor: anchor,
+  });
+}
+
+function FlyTo({ pos, zoom }: { pos: [number, number]; zoom: number }) {
+  const map = useMap();
+  useEffect(() => {
+    map.flyTo(pos, zoom, { animate: true, duration: 1.2 });
+  }, [pos[0], pos[1], zoom]);
+  return null;
+}
+
+async function geocodeQuery(query: string): Promise<[number, number] | null> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`
+    );
+    const data = await res.json();
+    if (data[0]) return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+  } catch {}
+  return null;
+}
+
+const modeIcons = { metro: TrainFront, bus: Bus, bike: Bike, walk: Footprints };
 
 const PRIORITIES = [
   { id: "eco",        label: "Éco",        icon: Leaf },
@@ -16,6 +40,9 @@ const PRIORITIES = [
 ];
 
 type AIResult = { suggestion: string; steps: string[]; co2_estimate: string; tip: string } | null;
+type RouteMarkers = { origin: [number, number]; dest: [number, number] } | null;
+
+const TUNIS: [number, number] = [36.8065, 10.1815];
 
 export function MapPage() {
   const [modes, setModes] = useState<Array<{ id: string; label: string; status: string }>>([]);
@@ -24,12 +51,50 @@ export function MapPage() {
   const [destination, setDestination] = useState("");
   const [priority, setPriority] = useState("eco");
   const [loading, setLoading] = useState(false);
+  const [locating, setLocating] = useState(false);
   const [result, setResult] = useState<AIResult>(null);
   const [error, setError] = useState<string | null>(null);
+  const [userPos, setUserPos] = useState<[number, number] | null>(null);
+  const [routeMarkers, setRouteMarkers] = useState<RouteMarkers>(null);
+  const [flyTarget, setFlyTarget] = useState<{ pos: [number, number]; zoom: number } | null>(null);
 
   useEffect(() => {
     api.transportModes().then(setModes).catch(() => setModes([]));
   }, []);
+
+  const handleLocate = () => {
+    if (!navigator.geolocation) {
+      setError("Géolocalisation non supportée par ce navigateur");
+      return;
+    }
+    setLocating(true);
+    setError(null);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=fr`
+          );
+          const data = await res.json();
+          const addr = data.address;
+          const parts = [addr.road, addr.suburb || addr.neighbourhood, addr.city || addr.town || addr.village].filter(Boolean);
+          setOrigin(parts.length ? parts.join(", ") : data.display_name.split(",").slice(0, 2).join(",").trim());
+          setUserPos([latitude, longitude]);
+          setFlyTarget({ pos: [latitude, longitude], zoom: 15 });
+        } catch {
+          setError("Impossible de déterminer votre adresse");
+        } finally {
+          setLocating(false);
+        }
+      },
+      () => {
+        setError("Permission de localisation refusée");
+        setLocating(false);
+      },
+      { timeout: 8000 }
+    );
+  };
 
   const handleAI = async (e: FormEvent) => {
     e.preventDefault();
@@ -37,14 +102,23 @@ export function MapPage() {
     setLoading(true);
     setResult(null);
     setError(null);
+    setRouteMarkers(null);
     try {
-      const data = await api.aiSuggest({
-        origin: origin.trim(),
-        destination: destination.trim(),
-        priority,
-        modes: ["walk", "transit", "bike"],
-      });
+      const [data, originPos, destPos] = await Promise.all([
+        api.aiSuggest({ origin: origin.trim(), destination: destination.trim(), priority, modes: ["walk", "transit", "bike"] }),
+        geocodeQuery(origin.trim()),
+        geocodeQuery(destination.trim()),
+      ]);
       setResult(data);
+      if (originPos && destPos) {
+        setRouteMarkers({ origin: originPos, dest: destPos });
+        setFlyTarget({
+          pos: [(originPos[0] + destPos[0]) / 2, (originPos[1] + destPos[1]) / 2],
+          zoom: 10,
+        });
+      } else if (originPos) {
+        setFlyTarget({ pos: originPos, zoom: 13 });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur IA");
     } finally {
@@ -83,21 +157,40 @@ export function MapPage() {
       </section>
 
       <section className="map-surface">
-        <div className="map-grid" />
-        <div className="flow-route route-a" />
-        <div className="flow-route route-b" />
-        <div className="flow-route route-c" />
-        <div className="map-marker primary pulse">
-          <MapPin size={22} />
-          Campus
-        </div>
-        <div className="map-marker secondary">Metro 3 min</div>
-        <div className="map-marker tertiary">Bike hub 6 libres</div>
-        <aside className="map-panel">
-          <p className="eyebrow">Trajet recommandé</p>
-          <strong>Campus / Gare Centrale</strong>
-          <span>24 min · 1 correspondance · 1.4 kg CO₂ économisé</span>
-        </aside>
+        <MapContainer center={TUNIS} zoom={12} style={{ height: "100%", width: "100%" }} zoomControl>
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          {flyTarget && <FlyTo pos={flyTarget.pos} zoom={flyTarget.zoom} />}
+          {userPos && (
+            <Marker position={userPos} icon={makeIcon("#22C55E", "📍 Ma position", [55, 28])}>
+              <Popup>Vous êtes ici</Popup>
+            </Marker>
+          )}
+          {routeMarkers && (
+            <>
+              <Marker position={routeMarkers.origin} icon={makeIcon("#176b87", "🚩 Départ", [40, 28])}>
+                <Popup>{origin}</Popup>
+              </Marker>
+              <Marker position={routeMarkers.dest} icon={makeIcon("#f59e0b", "🏁 Arrivée", [40, 28])}>
+                <Popup>{destination}</Popup>
+              </Marker>
+              <Polyline
+                positions={[routeMarkers.origin, routeMarkers.dest]}
+                pathOptions={{ color: "#22C55E", weight: 4, dashArray: "10 6", opacity: 0.85 }}
+              />
+            </>
+          )}
+        </MapContainer>
+
+        {result && (
+          <aside className="map-panel">
+            <p className="eyebrow">Trajet recommandé</p>
+            <strong>{origin} → {destination}</strong>
+            <span>{result.co2_estimate}</span>
+          </aside>
+        )}
       </section>
 
       <section className="list-row">
@@ -123,12 +216,23 @@ export function MapPage() {
           <div className="ai-inputs">
             <label>
               Départ
-              <input
-                placeholder="Ex : Campus Esprit, Ariana"
-                value={origin}
-                onChange={e => setOrigin(e.target.value)}
-                required
-              />
+              <div className="input-with-btn">
+                <input
+                  placeholder="Ex : Campus Esprit, Ariana"
+                  value={origin}
+                  onChange={e => setOrigin(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  className="locate-btn"
+                  onClick={handleLocate}
+                  disabled={locating}
+                  title="Utiliser ma position actuelle"
+                >
+                  {locating ? <Loader size={14} className="spin" /> : <LocateFixed size={14} />}
+                </button>
+              </div>
             </label>
             <label>
               Arrivée
@@ -156,7 +260,9 @@ export function MapPage() {
           </div>
 
           <button type="submit" className="ai-submit" disabled={loading}>
-            {loading ? <><Loader size={16} className="spin" /> Analyse en cours…</> : <><Sparkles size={16} /> Suggérer un itinéraire</>}
+            {loading
+              ? <><Loader size={16} className="spin" /> Analyse en cours…</>
+              : <><Sparkles size={16} /> Suggérer un itinéraire</>}
           </button>
         </form>
 
@@ -166,9 +272,7 @@ export function MapPage() {
           <div className="ai-result">
             <p className="ai-suggestion">{result.suggestion}</p>
             <ol className="ai-steps">
-              {result.steps.map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
+              {result.steps.map((step, i) => <li key={i}>{step}</li>)}
             </ol>
             <div className="ai-meta">
               <span className="ai-co2"><Leaf size={14} /> {result.co2_estimate}</span>
