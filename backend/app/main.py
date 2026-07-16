@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
 from app.core.middleware import RateLimitMiddleware, SecurityHeadersMiddleware
 from app.database import Base, engine
+from app.models import trip as _trip_model  # noqa: F401 — registers Trip table before create_all
 from app.routers import ai, auth, demo, profile, routing, transport
 
 Base.metadata.create_all(bind=engine)

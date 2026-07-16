@@ -651,6 +651,33 @@ button:hover {
 /* ================================================================
    DASHBOARD
    ================================================================ */
+.co2-banner {
+  align-items: center;
+  background: linear-gradient(135deg, var(--green-dim), rgba(20 184 166 / 12%));
+  border: 1px solid rgba(34 197 94 / 30%);
+  border-radius: 16px;
+  display: flex;
+  gap: 16px;
+  padding: 20px 24px;
+}
+.co2-icon {
+  align-items: center;
+  background: var(--green);
+  border-radius: 12px;
+  color: #fff;
+  display: flex;
+  flex-shrink: 0;
+  height: 48px;
+  justify-content: center;
+  width: 48px;
+}
+.co2-body { flex: 1; }
+.co2-body h3 { color: var(--green-dark); font-size: 18px; font-weight: 700; margin: 4px 0; }
+.co2-body p  { color: var(--ink-2); font-size: 13px; margin: 0; }
+.co2-total { text-align: center; }
+.co2-total strong { color: var(--green-dark); display: block; font-size: 28px; font-weight: 800; line-height: 1; }
+.co2-total span   { color: var(--ink-2); font-size: 12px; }
+
 .flow-dashboard {
   display: grid;
   gap: 12px;

@@ -63,4 +63,8 @@ export const api = {
       "/ai/suggest",
       { method: "POST", body: JSON.stringify(payload) }
     ),
+  aiStats: () =>
+    request<{ total_trips: number; total_co2_kg: number; monthly_trips: number; monthly_co2_kg: number }>(
+      "/ai/stats"
+    ),
 };

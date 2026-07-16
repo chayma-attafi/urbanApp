@@ -218,7 +218,7 @@ export function MapPage() {
               Départ
               <div className="input-with-btn">
                 <input
-                  placeholder="Ex : Campus Esprit, Ariana"
+                  placeholder="Ex : Campus France, Paris"
                   value={origin}
                   onChange={e => setOrigin(e.target.value)}
                   required
