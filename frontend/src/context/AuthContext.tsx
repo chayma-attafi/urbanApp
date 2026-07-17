@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile,
       refresh,
       login: async (email, password) => applyAuth(await api.login(email, password)),
-      register: async (payload) => applyAuth(await api.register(payload)),
+      register: async (payload) => { await api.register(payload); },
       logout: async () => {
         await api.logout().catch(() => undefined);
         setUser(null);

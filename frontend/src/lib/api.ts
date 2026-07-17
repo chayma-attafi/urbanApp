@@ -50,7 +50,9 @@ export const api = {
   login: (email: string, password: string) =>
     request<AuthResponse>("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
   register: (payload: { email: string; password: string; first_name: string; last_name: string; phone?: string }) =>
-    request<AuthResponse>("/auth/register", { method: "POST", body: JSON.stringify(payload) }),
+    request<{ message: string }>("/auth/register", { method: "POST", body: JSON.stringify(payload) }),
+  verifyEmail: (token: string) =>
+    request<{ message: string }>(`/auth/verify?token=${encodeURIComponent(token)}`),
   logout: () => request<{ message: string }>("/auth/logout", { method: "POST" }),
   updateProfile: (payload: Partial<Profile>) =>
     request<Profile>("/profile/me", { method: "PUT", body: JSON.stringify(payload) }),

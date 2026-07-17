@@ -1,15 +1,48 @@
 import { FormEvent, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-import { Lock, Mail, UserPlus } from "lucide-react";
+import { CheckCircle, Lock, Mail, UserPlus } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export function AuthPage({ mode }: { mode: "login" | "register" }) {
   const { user, login, register } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
+  const [sentTo, setSentTo] = useState("");
 
   if (user) {
     return <Navigate to="/" replace />;
+  }
+
+  if (emailSent) {
+    return (
+      <main className="auth-page">
+        <section className="auth-visual">
+          <div className="brand-block auth-brand">
+            <img src="/icons/icon-512.svg" alt="UrbanFlow" width={36} height={36} style={{ borderRadius: 8, display: "block" }} />
+            <div><strong>UrbanFlow</strong><small>Mobility</small></div>
+          </div>
+          <h1>Naviguez la ville avec un cockpit de mobilité en temps réel.</h1>
+          <div className="flow-line"><span /><span /><span /></div>
+        </section>
+        <div className="auth-panel" style={{ textAlign: "center", gap: 16 }}>
+          <div className="auth-icon" style={{ background: "var(--green-dim)", color: "var(--green-dark)" }}>
+            <CheckCircle size={22} />
+          </div>
+          <p className="eyebrow">UrbanFlow</p>
+          <h1>Vérifiez votre email</h1>
+          <p style={{ color: "var(--fg-muted)", lineHeight: 1.6 }}>
+            Un lien de confirmation a été envoyé à<br />
+            <strong>{sentTo}</strong>
+          </p>
+          <p style={{ color: "var(--fg-muted)", fontSize: "0.85rem" }}>
+            Cliquez sur le lien dans l'email pour activer votre compte.<br />
+            Vérifiez aussi vos spams.
+          </p>
+          <Link to="/login" style={{ marginTop: 8 }}>Se connecter</Link>
+        </div>
+      </main>
+    );
   }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -19,6 +52,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
     try {
       if (mode === "login") {
         await login(String(form.get("email")), String(form.get("password")));
+        navigate("/");
       } else {
         const password = String(form.get("password"));
         const confirmPassword = String(form.get("confirm_password"));
@@ -26,15 +60,17 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
           setError("Les mots de passe ne correspondent pas");
           return;
         }
+        const email = String(form.get("email"));
         await register({
-          email: String(form.get("email")),
+          email,
           password,
           first_name: String(form.get("first_name")),
           last_name: String(form.get("last_name")),
-          phone: String(form.get("phone") || "")
+          phone: String(form.get("phone") || ""),
         });
+        setSentTo(email);
+        setEmailSent(true);
       }
-      navigate("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inconnue");
     }
