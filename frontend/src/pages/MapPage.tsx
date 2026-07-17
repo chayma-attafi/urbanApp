@@ -22,13 +22,37 @@ function FlyTo({ pos, zoom }: { pos: [number, number]; zoom: number }) {
 
 async function geocodeQuery(query: string): Promise<[number, number] | null> {
   try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`
-    );
-    const data = await res.json();
-    if (data[0]) return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+    const variants = [
+      query,
+      `${query}, Tunis`,
+      `${query}, Tunisie`,
+      `${query}, Tunisia`,
+      `${query}, France`,
+    ];
+    for (const q of variants) {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&accept-language=fr`
+      );
+      const data = await res.json();
+      if (data[0]) return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+    }
   } catch {}
   return null;
+}
+
+async function fetchRoute(from: [number, number], to: [number, number]): Promise<[number, number][]> {
+  try {
+    const res = await fetch(
+      `https://router.project-osrm.org/route/v1/driving/${from[1]},${from[0]};${to[1]},${to[0]}?overview=full&geometries=geojson`
+    );
+    const data = await res.json();
+    if (data.routes?.[0]?.geometry?.coordinates?.length > 1) {
+      return data.routes[0].geometry.coordinates.map(([lon, lat]: [number, number]) => [lat, lon] as [number, number]);
+    }
+  } catch (e) {
+    console.warn("OSRM routing failed, using straight line", e);
+  }
+  return [from, to]; // straight line fallback
 }
 
 const modeIcons = { metro: TrainFront, bus: Bus, bike: Bike, walk: Footprints };
@@ -56,6 +80,7 @@ export function MapPage() {
   const [error, setError] = useState<string | null>(null);
   const [userPos, setUserPos] = useState<[number, number] | null>(null);
   const [routeMarkers, setRouteMarkers] = useState<RouteMarkers>(null);
+  const [routePath, setRoutePath] = useState<[number, number][]>([]);
   const [flyTarget, setFlyTarget] = useState<{ pos: [number, number]; zoom: number } | null>(null);
 
   useEffect(() => {
@@ -103,6 +128,7 @@ export function MapPage() {
     setResult(null);
     setError(null);
     setRouteMarkers(null);
+    setRoutePath([]);
     try {
       const [data, originPos, destPos] = await Promise.all([
         api.aiSuggest({ origin: origin.trim(), destination: destination.trim(), priority, modes: ["walk", "transit", "bike"] }),
@@ -110,14 +136,15 @@ export function MapPage() {
         geocodeQuery(destination.trim()),
       ]);
       setResult(data);
+      if (originPos) setFlyTarget({ pos: originPos, zoom: 13 });
       if (originPos && destPos) {
         setRouteMarkers({ origin: originPos, dest: destPos });
+        const path = await fetchRoute(originPos, destPos);
+        setRoutePath(path);
         setFlyTarget({
           pos: [(originPos[0] + destPos[0]) / 2, (originPos[1] + destPos[1]) / 2],
-          zoom: 10,
+          zoom: 11,
         });
-      } else if (originPos) {
-        setFlyTarget({ pos: originPos, zoom: 13 });
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur IA");
@@ -176,10 +203,12 @@ export function MapPage() {
               <Marker position={routeMarkers.dest} icon={makeIcon("#f59e0b", "🏁 Arrivée", [40, 28])}>
                 <Popup>{destination}</Popup>
               </Marker>
-              <Polyline
-                positions={[routeMarkers.origin, routeMarkers.dest]}
-                pathOptions={{ color: "#22C55E", weight: 4, dashArray: "10 6", opacity: 0.85 }}
-              />
+              {routePath.length > 0 && (
+                <Polyline
+                  positions={routePath}
+                  pathOptions={{ color: "#22C55E", weight: 5, opacity: 0.85 }}
+                />
+              )}
             </>
           )}
         </MapContainer>
@@ -218,7 +247,7 @@ export function MapPage() {
               Départ
               <div className="input-with-btn">
                 <input
-                  placeholder="Ex : Campus France, Paris"
+                  placeholder="Ex : Campus Paris, France"
                   value={origin}
                   onChange={e => setOrigin(e.target.value)}
                   required
@@ -237,7 +266,7 @@ export function MapPage() {
             <label>
               Arrivée
               <input
-                placeholder="Ex : Gare de Tunis, Tunis"
+                placeholder="Ex : Gare de France"
                 value={destination}
                 onChange={e => setDestination(e.target.value)}
                 required
@@ -272,7 +301,7 @@ export function MapPage() {
           <div className="ai-result">
             <p className="ai-suggestion">{result.suggestion}</p>
             <ol className="ai-steps">
-              {result.steps.map((step, i) => <li key={i}>{step}</li>)}
+              {(result.steps ?? []).map((step, i) => <li key={i}>{step}</li>)}
             </ol>
             <div className="ai-meta">
               <span className="ai-co2"><Leaf size={14} /> {result.co2_estimate}</span>
