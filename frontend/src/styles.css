@@ -651,6 +651,52 @@ button:hover {
 /* ================================================================
    DASHBOARD
    ================================================================ */
+/* ── RGPD Banner ── */
+.gdpr-banner {
+  align-items: center;
+  background: var(--surface);
+  border-top: 1px solid var(--line-hi);
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  left: 0;
+  padding: 14px 20px;
+  position: fixed;
+  right: 0;
+  z-index: 9999;
+  box-shadow: 0 -4px 20px rgba(0 0 0 / 8%);
+}
+.gdpr-banner p {
+  color: var(--fg-muted);
+  flex: 1;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  margin: 0;
+  min-width: 200px;
+}
+.gdpr-banner a { color: var(--green-dark); font-weight: 600; }
+.gdpr-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.gdpr-decline {
+  background: transparent;
+  border: 1px solid var(--line-hi);
+  border-radius: 8px;
+  color: var(--fg-muted);
+  cursor: pointer;
+  font-size: 0.82rem;
+  padding: 7px 14px;
+}
+.gdpr-accept {
+  background: var(--green);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 7px 14px;
+}
+
 .co2-banner {
   align-items: center;
   background: linear-gradient(135deg, var(--green-dim), rgba(20 184 166 / 12%));

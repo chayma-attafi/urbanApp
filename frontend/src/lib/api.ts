@@ -54,6 +54,7 @@ export const api = {
   verifyEmail: (token: string) =>
     request<{ message: string }>(`/auth/verify?token=${encodeURIComponent(token)}`),
   logout: () => request<{ message: string }>("/auth/logout", { method: "POST" }),
+  deleteAccount: () => request<void>("/auth/me", { method: "DELETE" }),
   updateProfile: (payload: Partial<Profile>) =>
     request<Profile>("/profile/me", { method: "PUT", body: JSON.stringify(payload) }),
   dashboard: () => request<Record<string, unknown>>("/demo/dashboard"),

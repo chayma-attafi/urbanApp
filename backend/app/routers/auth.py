@@ -101,3 +101,11 @@ def logout(response: Response):
 def me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     profile = db.query(Profile).filter(Profile.user_id == current_user.id).first()
     return {"user": current_user, "profile": profile}
+
+
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
+def delete_account(response: Response, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    db.delete(current_user)
+    db.commit()
+    response.delete_cookie("access_token", path="/")
+
