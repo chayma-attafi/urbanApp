@@ -298,15 +298,6 @@ export function MapPage() {
         )}
       </section>
 
-      <section className="list-row">
-        {modes.map((mode) => (
-          <article className="metric-card" key={mode.id}>
-            <span>{mode.label}</span>
-            <strong>{mode.status}</strong>
-          </article>
-        ))}
-      </section>
-
       {/* ── AI Route Planner ── */}
       <section className="ai-planner">
         <div className="ai-planner-header">
