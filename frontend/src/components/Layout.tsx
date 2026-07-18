@@ -45,7 +45,7 @@ export function Layout() {
             <small>Mobility</small>
           </div>
         </div>
-        <div className="sidebar-profile" style={{ flex: 1 }}>
+        <div className="sidebar-profile">
           <div className="avatar-small">
             {avatarUrl ? <img src={avatarUrl} alt="Avatar" /> : <User size={18} />}
           </div>
@@ -55,7 +55,7 @@ export function Layout() {
           </div>
           <div className="live-dot" title="En ligne" />
         </div>
-        <nav>
+        <nav style={{ flex: 1 }}>
           {links.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
               <Icon size={18} aria-hidden="true" />
