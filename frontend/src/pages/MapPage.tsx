@@ -95,34 +95,59 @@ export function MapPage() {
     }
     setLocating(true);
     setError(null);
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const { latitude, longitude } = pos.coords;
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=fr`
-          );
-          const data = await res.json();
-          const addr = data.address;
-          const parts = [addr.road, addr.suburb || addr.neighbourhood, addr.city || addr.town || addr.village].filter(Boolean);
-          setOrigin(parts.length ? parts.join(", ") : data.display_name.split(",").slice(0, 2).join(",").trim());
-          setUserPos([latitude, longitude]);
-          setFlyTarget({ pos: [latitude, longitude], zoom: 15 });
-          api.transportNearby(latitude, longitude)
-            .then(data => setBikeStations(data.filter(s => s.lat != null) as typeof bikeStations))
-            .catch(() => null);
-        } catch {
-          setError("Impossible de déterminer votre adresse");
-        } finally {
-          setLocating(false);
-        }
-      },
-      () => {
-        setError("Permission de localisation refusée");
+
+    const onSuccess = async (pos: GeolocationPosition) => {
+      try {
+        const { latitude, longitude } = pos.coords;
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=fr`
+        );
+        const data = await res.json();
+        const addr = data.address;
+        const parts = [addr.road, addr.suburb || addr.neighbourhood, addr.city || addr.town || addr.village].filter(Boolean);
+        setOrigin(parts.length ? parts.join(", ") : data.display_name.split(",").slice(0, 2).join(",").trim());
+        setUserPos([latitude, longitude]);
+        setFlyTarget({ pos: [latitude, longitude], zoom: 15 });
+        api.transportNearby(latitude, longitude)
+          .then(d => setBikeStations(d.filter(s => s.lat != null) as typeof bikeStations))
+          .catch(() => null);
+      } catch {
+        setError("Impossible de déterminer votre adresse");
+      } finally {
         setLocating(false);
-      },
-      { timeout: 8000 }
-    );
+      }
+    };
+
+    const onError = (err: GeolocationPositionError, retried = false) => {
+      if (err.code === 3 && !retried) {
+        // Timeout with high accuracy → retry with network-based location (faster on mobile)
+        navigator.geolocation.getCurrentPosition(
+          onSuccess,
+          (e) => onError(e, true),
+          { timeout: 15000, enableHighAccuracy: false, maximumAge: 60000 }
+        );
+        return;
+      }
+      if (err.code === 1) {
+        const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+        setError(
+          isIos
+            ? "Localisation refusée. Allez dans Réglages → Confidentialité → Service de localisation → Safari/UrbanFlow → Autoriser"
+            : "Localisation refusée. Autorisez l'accès dans les paramètres de votre navigateur ou de l'application."
+        );
+      } else if (err.code === 2) {
+        setError("Position indisponible. Vérifiez que le GPS est activé sur votre appareil.");
+      } else {
+        setError("Délai dépassé. Placez-vous dans un endroit avec meilleur signal GPS.");
+      }
+      setLocating(false);
+    };
+
+    navigator.geolocation.getCurrentPosition(onSuccess, onError, {
+      timeout: 10000,
+      enableHighAccuracy: true,
+      maximumAge: 30000,
+    });
   };
 
   // ── TEST ONLY — hardcoded Paris Campus Numérique coords ──────────────────
