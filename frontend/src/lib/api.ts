@@ -76,4 +76,8 @@ export const api = {
     request<{ total_trips: number; total_co2_kg: number; monthly_trips: number; monthly_co2_kg: number }>(
       "/ai/stats"
     ),
+  aiWeekly: () =>
+    request<Array<{ date: string; trips: number; co2_kg: number }>>("/ai/weekly"),
+  aiPriorities: () =>
+    request<Array<{ priority: string; count: number }>>("/ai/priorities"),
 };

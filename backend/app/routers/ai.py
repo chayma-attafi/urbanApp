@@ -1,11 +1,11 @@
 import json
 import re
-from datetime import datetime
+from datetime import date, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
 from groq import Groq
 from pydantic import BaseModel
-from sqlalchemy import func
+from sqlalchemy import cast, Date, func
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -152,3 +152,40 @@ def get_co2_stats(
         monthly_trips=monthly[0],
         monthly_co2_kg=round(float(monthly[1]), 1),
     )
+
+
+@router.get("/weekly")
+def get_weekly_stats(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    today = date.today()
+    week_ago = today - timedelta(days=6)
+
+    rows = db.query(
+        cast(Trip.created_at, Date).label("day"),
+        func.count(Trip.id).label("trips"),
+        func.coalesce(func.sum(Trip.co2_kg), 0.0).label("co2_kg"),
+    ).filter(
+        Trip.user_id == current_user.id,
+        Trip.created_at >= week_ago,
+    ).group_by(cast(Trip.created_at, Date)).all()
+
+    data = {row.day: {"trips": row.trips, "co2_kg": float(row.co2_kg)} for row in rows}
+    result = []
+    for i in range(7):
+        day = week_ago + timedelta(days=i)
+        d = data.get(day, {"trips": 0, "co2_kg": 0.0})
+        result.append({"date": day.isoformat(), "trips": d["trips"], "co2_kg": round(d["co2_kg"], 1)})
+    return result
+
+
+@router.get("/priorities")
+def get_priority_stats(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    rows = db.query(Trip.priority, func.count(Trip.id)).filter(
+        Trip.user_id == current_user.id,
+    ).group_by(Trip.priority).all()
+    return [{"priority": row[0], "count": row[1]} for row in rows]

@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     DATABASE_NAME: str = "postgres"
 
     GROQ_API_KEY: str = ""
-    GROQ_MODEL: str = "meta-llama/llama-4-scout-17b-16e-instruct"
+    GROQ_MODEL: str = "llama-3.3-70b-versatile"
 
     SMTP_HOST: str = "smtp.gmail.com"
     SMTP_PORT: int = 587
