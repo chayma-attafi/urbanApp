@@ -55,7 +55,7 @@ export function Layout() {
           </div>
           <div className="live-dot" title="En ligne" />
         </div>
-        <nav style={{ flex: 1 }}>
+        <nav>
           {links.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
               <Icon size={18} aria-hidden="true" />
