@@ -1241,6 +1241,23 @@ input[readonly] {
   padding: 10px 14px;
 }
 
+.pwd-rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 12px;
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+}
+.pwd-rule {
+  align-items: center;
+  color: var(--red, #ef4444);
+  display: flex;
+  font-size: 11px;
+  gap: 4px;
+}
+.pwd-rule.ok { color: var(--green-dark); }
+
 .success {
   color: var(--green-dark);
   font-size: 13px;

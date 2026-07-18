@@ -1,7 +1,15 @@
 import { FormEvent, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-import { CheckCircle, Lock, Mail, UserPlus } from "lucide-react";
+import { Check, CheckCircle, Lock, Mail, UserPlus, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+
+const pwdRules = [
+  { label: "8 caractères minimum", test: (p: string) => p.length >= 8 },
+  { label: "Une majuscule", test: (p: string) => /[A-Z]/.test(p) },
+  { label: "Une minuscule", test: (p: string) => /[a-z]/.test(p) },
+  { label: "Un chiffre", test: (p: string) => /\d/.test(p) },
+  { label: "Un caractère spécial (!@#$%…)", test: (p: string) => /[!@#$%^&*(),.?":{}|<>\-_=+\[\]\\;'/`~]/.test(p) },
+];
 
 export function AuthPage({ mode }: { mode: "login" | "register" }) {
   const { user, login, register } = useAuth();
@@ -9,6 +17,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
   const [error, setError] = useState<string | null>(null);
   const [emailSent, setEmailSent] = useState(false);
   const [sentTo, setSentTo] = useState("");
+  const [pwd, setPwd] = useState("");
 
   if (user) {
     return <Navigate to="/" replace />;
@@ -123,7 +132,29 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
         </label>
         <label>
           Mot de passe
-          <span className="input-shell"><Lock size={17} /><input name="password" type="password" minLength={8} required /></span>
+          <span className="input-shell">
+            <Lock size={17} />
+            <input
+              name="password"
+              type="password"
+              required
+              value={mode === "register" ? pwd : undefined}
+              onChange={mode === "register" ? e => setPwd(e.target.value) : undefined}
+            />
+          </span>
+          {mode === "register" && pwd.length > 0 && (
+            <ul className="pwd-rules">
+              {pwdRules.map(rule => {
+                const ok = rule.test(pwd);
+                return (
+                  <li key={rule.label} className={ok ? "pwd-rule ok" : "pwd-rule"}>
+                    {ok ? <Check size={11} /> : <X size={11} />}
+                    {rule.label}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </label>
 
         {mode === "register" && (

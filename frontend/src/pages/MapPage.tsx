@@ -66,7 +66,7 @@ const PRIORITIES = [
 type AIResult = { suggestion: string; steps: string[]; co2_estimate: string; tip: string } | null;
 type RouteMarkers = { origin: [number, number]; dest: [number, number] } | null;
 
-const TUNIS: [number, number] = [36.8065, 10.1815];
+const PARIS: [number, number] = [48.8566, 2.3522];
 
 export function MapPage() {
   const [modes, setModes] = useState<Array<{ id: string; label: string; status: string }>>([]);
@@ -82,6 +82,7 @@ export function MapPage() {
   const [routeMarkers, setRouteMarkers] = useState<RouteMarkers>(null);
   const [routePath, setRoutePath] = useState<[number, number][]>([]);
   const [flyTarget, setFlyTarget] = useState<{ pos: [number, number]; zoom: number } | null>(null);
+  const [bikeStations, setBikeStations] = useState<Array<{ id: string; name: string; mode: string; lat: number; lon: number; available_bikes: number; available_stands: number; status: string; distance_m: number }>>([]);
 
   useEffect(() => {
     api.transportModes().then(setModes).catch(() => setModes([]));
@@ -107,6 +108,9 @@ export function MapPage() {
           setOrigin(parts.length ? parts.join(", ") : data.display_name.split(",").slice(0, 2).join(",").trim());
           setUserPos([latitude, longitude]);
           setFlyTarget({ pos: [latitude, longitude], zoom: 15 });
+          api.transportNearby(latitude, longitude)
+            .then(data => setBikeStations(data.filter(s => s.lat != null) as typeof bikeStations))
+            .catch(() => null);
         } catch {
           setError("Impossible de déterminer votre adresse");
         } finally {
@@ -120,6 +124,27 @@ export function MapPage() {
       { timeout: 8000 }
     );
   };
+
+  // ── TEST ONLY — hardcoded Paris Campus Numérique coords ──────────────────
+  const handleTestParis = async () => {
+    const lat = 48.8604;
+    const lon = 2.3477; // Châtelet-Les Halles, Paris — hub transport dense
+    setUserPos([lat, lon]);
+    setFlyTarget({ pos: [lat, lon], zoom: 15 });
+    setOrigin("Châtelet-Les Halles, Paris");
+    setBikeStations([]);
+    try {
+      const data = await api.transportNearby(lat, lon);
+      console.log("JCDecaux raw response:", data);
+      const filtered = data.filter(s => s.lat != null) as typeof bikeStations;
+      console.log("Stations filtrées:", filtered.length, filtered);
+      setBikeStations(filtered);
+    } catch (e) {
+      console.error("JCDecaux error:", e);
+      setError("Erreur JCDecaux : " + (e instanceof Error ? e.message : "inconnue"));
+    }
+  };
+  // ─────────────────────────────────────────────────────────────────────────
 
   const handleAI = async (e: FormEvent) => {
     e.preventDefault();
@@ -160,9 +185,9 @@ export function MapPage() {
           <p className="eyebrow">Live map</p>
           <h2>UrbanFlow network</h2>
         </div>
-        <button>
+        <button type="button" onClick={handleTestParis}>
           <Navigation size={18} />
-          Nouveau trajet
+          Test PRIM · Paris
         </button>
       </section>
 
@@ -184,7 +209,7 @@ export function MapPage() {
       </section>
 
       <section className="map-surface">
-        <MapContainer center={TUNIS} zoom={12} style={{ height: "100%", width: "100%" }} zoomControl>
+        <MapContainer center={PARIS} zoom={12} style={{ height: "100%", width: "100%" }} zoomControl>
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -195,6 +220,36 @@ export function MapPage() {
               <Popup>Vous êtes ici</Popup>
             </Marker>
           )}
+          {bikeStations.filter(s => {
+            if (activeMode === "metro") return ["metro", "rer", "tram"].includes(s.mode);
+            if (activeMode === "bus")   return s.mode === "bus";
+            if (activeMode === "bike")  return s.mode === "bike";
+            return false; // walk → aucun marqueur transport
+          }).map(s => {
+            const modeStyle: Record<string, { bg: string; emoji: string }> = {
+              metro: { bg: "#6366f1", emoji: "🚇" },
+              rer:   { bg: "#1e3a8a", emoji: "🚆" },
+              tram:  { bg: "#3b82f6", emoji: "🚃" },
+              bus:   { bg: "#f97316", emoji: "🚌" },
+              bike:  { bg: s.available_bikes > 0 ? "#22C55E" : "#9ca3af", emoji: "🚲" },
+            };
+            const style = modeStyle[s.mode] ?? { bg: "#64748b", emoji: "📍" };
+            const label = s.mode === "bike"
+              ? `${style.emoji} ${s.available_bikes}`
+              : `${style.emoji} ${s.name.split(" - ")[0].slice(0, 12)}`;
+            return (
+              <Marker key={s.id} position={[s.lat, s.lon]} icon={makeIcon(style.bg, label, [50, 14])}>
+                <Popup>
+                  <strong>{s.name}</strong><br />
+                  {s.mode === "bike"
+                    ? <>{s.available_bikes} vélo{s.available_bikes !== 1 ? "s" : ""} · {s.available_stands} place{s.available_stands !== 1 ? "s" : ""}</>
+                    : <>{s.mode.toUpperCase()}</>
+                  }<br />
+                  <small>{s.distance_m} m</small>
+                </Popup>
+              </Marker>
+            );
+          })}
           {routeMarkers && (
             <>
               <Marker position={routeMarkers.origin} icon={makeIcon("#176b87", "🚩 Départ", [40, 28])}>
@@ -220,6 +275,10 @@ export function MapPage() {
             <span>{result.co2_estimate}</span>
           </aside>
         )}
+        {/* DEBUG — à supprimer après test */}
+        <div style={{ position: "absolute", bottom: 8, left: 8, zIndex: 1000, background: "#1e293b", color: "#fff", padding: "4px 10px", borderRadius: 6, fontSize: 12 }}>
+          🚲 {bikeStations.length} station{bikeStations.length > 1 ? "s" : ""} JCDecaux
+        </div>
       </section>
 
       <section className="list-row">

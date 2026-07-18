@@ -29,6 +29,11 @@ class Settings(BaseSettings):
     SMTP_USER: str = ""
     SMTP_PASSWORD: str = ""
 
+    JCDECAUX_API_KEY: str = ""
+    JCDECAUX_CONTRACT: str = "Lyon"
+
+    PRIM_API_KEY: str = ""
+
     JWT_SECRET_KEY: str = Field(..., min_length=32)
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60

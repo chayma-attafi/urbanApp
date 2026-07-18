@@ -58,6 +58,13 @@ export const api = {
     request<Profile>("/profile/me", { method: "PUT", body: JSON.stringify(payload) }),
   dashboard: () => request<Record<string, unknown>>("/demo/dashboard"),
   transportModes: () => request<Array<{ id: string; label: string; status: string }>>("/transport/modes"),
+  transportNearby: (lat: number, lon: number) =>
+    request<Array<{
+      id: string; name: string; mode: string;
+      lat?: number; lon?: number;
+      available_bikes?: number; available_stands?: number;
+      status?: string; distance_m?: number;
+    }>>(`/transport/nearby?lat=${lat}&lon=${lon}`),
   routeEstimate: (origin: string, destination: string) =>
     request<Record<string, unknown>>(`/routing/estimate?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`),
   aiSuggest: (payload: { origin: string; destination: string; priority: string; modes: string[] }) =>
