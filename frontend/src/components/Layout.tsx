@@ -52,9 +52,9 @@ export function Layout() {
             </NavLink>
           ))}
         </nav>
-        <button className="ghost-button" onClick={handleLogout}>
-          <LogOut size={18} />
-          Deconnexion
+        <button className="ghost-button" onClick={handleLogout} aria-label="Se déconnecter">
+          <LogOut size={18} aria-hidden="true" />
+          Déconnexion
         </button>
       </aside>
       <Outlet />

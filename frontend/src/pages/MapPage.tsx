@@ -135,13 +135,9 @@ export function MapPage() {
     setBikeStations([]);
     try {
       const data = await api.transportNearby(lat, lon);
-      console.log("JCDecaux raw response:", data);
-      const filtered = data.filter(s => s.lat != null) as typeof bikeStations;
-      console.log("Stations filtrées:", filtered.length, filtered);
-      setBikeStations(filtered);
+      setBikeStations(data.filter(s => s.lat != null) as typeof bikeStations);
     } catch (e) {
-      console.error("JCDecaux error:", e);
-      setError("Erreur JCDecaux : " + (e instanceof Error ? e.message : "inconnue"));
+      setError("Erreur transport : " + (e instanceof Error ? e.message : "inconnue"));
     }
   };
   // ─────────────────────────────────────────────────────────────────────────
@@ -185,8 +181,8 @@ export function MapPage() {
           <p className="eyebrow">Live map</p>
           <h2>UrbanFlow network</h2>
         </div>
-        <button type="button" onClick={handleTestParis}>
-          <Navigation size={18} />
+        <button type="button" onClick={handleTestParis} aria-label="Tester les transports à Paris">
+          <Navigation size={18} aria-hidden="true" />
           Test PRIM · Paris
         </button>
       </section>
@@ -275,10 +271,6 @@ export function MapPage() {
             <span>{result.co2_estimate}</span>
           </aside>
         )}
-        {/* DEBUG — à supprimer après test */}
-        <div style={{ position: "absolute", bottom: 8, left: 8, zIndex: 1000, background: "#1e293b", color: "#fff", padding: "4px 10px", borderRadius: 6, fontSize: 12 }}>
-          🚲 {bikeStations.length} station{bikeStations.length > 1 ? "s" : ""} JCDecaux
-        </div>
       </section>
 
       <section className="list-row">
@@ -317,8 +309,9 @@ export function MapPage() {
                   onClick={handleLocate}
                   disabled={locating}
                   title="Utiliser ma position actuelle"
+                  aria-label="Utiliser ma position GPS comme point de départ"
                 >
-                  {locating ? <Loader size={14} className="spin" /> : <LocateFixed size={14} />}
+                  {locating ? <Loader size={14} className="spin" aria-hidden="true" /> : <LocateFixed size={14} aria-hidden="true" />}
                 </button>
               </div>
             </label>
@@ -347,10 +340,10 @@ export function MapPage() {
             ))}
           </div>
 
-          <button type="submit" className="ai-submit" disabled={loading}>
+          <button type="submit" className="ai-submit" disabled={loading} aria-label="Lancer la suggestion d'itinéraire par IA">
             {loading
-              ? <><Loader size={16} className="spin" /> Analyse en cours…</>
-              : <><Sparkles size={16} /> Suggérer un itinéraire</>}
+              ? <><Loader size={16} className="spin" aria-hidden="true" /> Analyse en cours…</>
+              : <><Sparkles size={16} aria-hidden="true" /> Suggérer un itinéraire</>}
           </button>
         </form>
 

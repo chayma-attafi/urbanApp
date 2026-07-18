@@ -109,7 +109,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
       </section>
 
       <form className="auth-panel" onSubmit={handleSubmit}>
-        <div className="auth-icon">{mode === "login" ? <Lock size={22} /> : <UserPlus size={22} />}</div>
+        <div className="auth-icon" aria-hidden="true">{mode === "login" ? <Lock size={22} /> : <UserPlus size={22} />}</div>
         <p className="eyebrow">UrbanFlow</p>
         <h1>{mode === "login" ? "Connexion" : "Créer un compte"}</h1>
 
@@ -117,38 +117,44 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
           <div className="form-grid">
             <label>
               Prénom
-              <input name="first_name" required />
+              <input name="first_name" aria-label="Prénom" autoComplete="given-name" required />
             </label>
             <label>
               Nom
-              <input name="last_name" required />
+              <input name="last_name" aria-label="Nom de famille" autoComplete="family-name" required />
             </label>
           </div>
         )}
 
         <label>
           Email
-          <span className="input-shell"><Mail size={17} /><input name="email" type="email" required /></span>
+          <span className="input-shell">
+            <Mail size={17} aria-hidden="true" />
+            <input name="email" type="email" aria-label="Adresse email" autoComplete="email" required />
+          </span>
         </label>
         <label>
           Mot de passe
           <span className="input-shell">
-            <Lock size={17} />
+            <Lock size={17} aria-hidden="true" />
             <input
               name="password"
               type="password"
+              aria-label="Mot de passe"
+              aria-describedby={mode === "register" && pwd.length > 0 ? "pwd-rules" : undefined}
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
               required
               value={mode === "register" ? pwd : undefined}
               onChange={mode === "register" ? e => setPwd(e.target.value) : undefined}
             />
           </span>
           {mode === "register" && pwd.length > 0 && (
-            <ul className="pwd-rules">
+            <ul id="pwd-rules" className="pwd-rules" aria-label="Critères du mot de passe" aria-live="polite">
               {pwdRules.map(rule => {
                 const ok = rule.test(pwd);
                 return (
-                  <li key={rule.label} className={ok ? "pwd-rule ok" : "pwd-rule"}>
-                    {ok ? <Check size={11} /> : <X size={11} />}
+                  <li key={rule.label} className={ok ? "pwd-rule ok" : "pwd-rule"} aria-label={`${rule.label} : ${ok ? "validé" : "non validé"}`}>
+                    {ok ? <Check size={11} aria-hidden="true" /> : <X size={11} aria-hidden="true" />}
                     {rule.label}
                   </li>
                 );
@@ -160,13 +166,16 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
         {mode === "register" && (
           <label>
             Confirmer mot de passe
-            <span className="input-shell"><Lock size={17} /><input name="confirm_password" type="password" minLength={8} required /></span>
+            <span className="input-shell">
+              <Lock size={17} aria-hidden="true" />
+              <input name="confirm_password" type="password" aria-label="Confirmer le mot de passe" autoComplete="new-password" minLength={8} required />
+            </span>
           </label>
         )}
         {mode === "register" && (
           <label>
             Téléphone
-            <input name="phone" />
+            <input name="phone" aria-label="Numéro de téléphone (optionnel)" autoComplete="tel" />
           </label>
         )}
 
