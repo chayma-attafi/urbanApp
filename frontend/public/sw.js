@@ -1,4 +1,4 @@
-const CACHE = "urbanflow-v1";
+const CACHE = "urbanflow-v2";
 const APP_SHELL = [
   "/",
   "/index.html",
@@ -27,9 +27,27 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // API calls → network first, no cache
+  // Cross-origin requests (Render API, OSM tiles, Nominatim…) → network only, offline fallback
+  if (url.origin !== self.location.origin) {
+    event.respondWith(
+      fetch(request).catch(() =>
+        new Response(JSON.stringify({ detail: "Hors ligne" }), {
+          headers: { "Content-Type": "application/json" },
+        })
+      )
+    );
+    return;
+  }
+
+  // Same-origin API routes → network first, no cache
   if (url.pathname.startsWith("/api/")) {
-    event.respondWith(fetch(request).catch(() => new Response(JSON.stringify({ detail: "Hors ligne" }), { headers: { "Content-Type": "application/json" } })));
+    event.respondWith(
+      fetch(request).catch(() =>
+        new Response(JSON.stringify({ detail: "Hors ligne" }), {
+          headers: { "Content-Type": "application/json" },
+        })
+      )
+    );
     return;
   }
 
