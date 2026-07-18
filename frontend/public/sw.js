@@ -1,4 +1,4 @@
-const CACHE = "urbanflow-v2";
+const CACHE = "urbanflow-v3";
 const APP_SHELL = [
   "/",
   "/index.html",
