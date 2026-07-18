@@ -25,7 +25,18 @@ export function Layout() {
   };
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" style={{ minHeight: "100dvh" }}>
+      {/* Mobile-only top bar */}
+      <header className="mobile-topbar">
+        <div className="brand-block">
+          <img src="/icons/icon-512.svg" alt="UrbanFlow" width={30} height={30} style={{ borderRadius: 6, display: "block" }} />
+          <div><strong>UrbanFlow</strong><small>Mobility</small></div>
+        </div>
+        <button onClick={handleLogout} aria-label="Se déconnecter">
+          <LogOut size={18} aria-hidden="true" />
+        </button>
+      </header>
+
       <aside className="sidebar">
         <div className="brand-block">
           <img src="/icons/icon-512.svg" alt="UrbanFlow" width={36} height={36} style={{ borderRadius: 8, display: "block" }} />
@@ -34,7 +45,7 @@ export function Layout() {
             <small>Mobility</small>
           </div>
         </div>
-        <div className="sidebar-profile">
+        <div className="sidebar-profile" style={{ flex: 1 }}>
           <div className="avatar-small">
             {avatarUrl ? <img src={avatarUrl} alt="Avatar" /> : <User size={18} />}
           </div>
@@ -47,7 +58,7 @@ export function Layout() {
         <nav>
           {links.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
-              <Icon size={18} />
+              <Icon size={18} aria-hidden="true" />
               {label}
             </NavLink>
           ))}
