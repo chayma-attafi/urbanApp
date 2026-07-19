@@ -1,7 +1,5 @@
-const CACHE = "urbanflow-v3";
+const CACHE = "urbanflow-v4";
 const APP_SHELL = [
-  "/",
-  "/index.html",
   "/manifest.json",
   "/icons/icon-192.svg",
   "/icons/icon-512.svg",
@@ -27,7 +25,7 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Cross-origin requests (Render API, OSM tiles, Nominatim…) → network only, offline fallback
+  // Cross-origin (Render API, OSM tiles, Nominatim, OSRM…) → network only
   if (url.origin !== self.location.origin) {
     event.respondWith(
       fetch(request).catch(() =>
@@ -39,7 +37,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Same-origin API routes → network first, no cache
+  // Same-origin API routes → network only
   if (url.pathname.startsWith("/api/")) {
     event.respondWith(
       fetch(request).catch(() =>
@@ -51,7 +49,22 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // App shell → cache first, network fallback
+  // HTML navigation → network first pour toujours récupérer le bon index.html
+  // (évite de servir un index.html périmé pointant vers de vieux hashes d'assets)
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE).then((cache) => cache.put(request, clone));
+          return response;
+        })
+        .catch(() => caches.match("/index.html").then((r) => r ?? Response.error()))
+    );
+    return;
+  }
+
+  // Assets statiques (JS/CSS avec hash Vite, icons…) → cache first
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;
