@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
-import { Bike, Bus, Footprints, Leaf, Loader, LocateFixed, Navigation, Sparkles, TrainFront, Zap } from "lucide-react";
+import { Bike, Bus, Clock, Footprints, Leaf, Loader, LocateFixed, Navigation, Sparkles, TrainFront, X, Zap } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
 import { api } from "../lib/api";
@@ -65,6 +65,8 @@ const PRIORITIES = [
 
 type AIResult = { suggestion: string; steps: string[]; co2_estimate: string; tip: string } | null;
 type RouteMarkers = { origin: [number, number]; dest: [number, number] } | null;
+type CachedRoute = { result: NonNullable<AIResult>; origin: string; destination: string; priority: string; timestamp: number };
+const CACHE_KEY = "uf_last_itinerary";
 
 const PARIS: [number, number] = [48.8566, 2.3522];
 
@@ -83,9 +85,24 @@ export function MapPage() {
   const [routePath, setRoutePath] = useState<[number, number][]>([]);
   const [flyTarget, setFlyTarget] = useState<{ pos: [number, number]; zoom: number } | null>(null);
   const [bikeStations, setBikeStations] = useState<Array<{ id: string; name: string; mode: string; lat: number; lon: number; available_bikes: number; available_stands: number; status: string; distance_m: number }>>([]);
+  const [lastCached, setLastCached] = useState<CachedRoute | null>(null);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
   useEffect(() => {
     api.transportModes().then(setModes).catch(() => setModes([]));
+    // Restore last cached itinerary from localStorage
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (raw) {
+        const c = JSON.parse(raw) as CachedRoute;
+        if (Date.now() - c.timestamp < 24 * 60 * 60 * 1000) setLastCached(c);
+      }
+    } catch {}
+    const onOnline = () => setIsOffline(false);
+    const onOffline = () => setIsOffline(true);
+    window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
+    return () => { window.removeEventListener("online", onOnline); window.removeEventListener("offline", onOffline); };
   }, []);
 
   const handleLocate = () => {
@@ -167,6 +184,16 @@ export function MapPage() {
   };
   // ─────────────────────────────────────────────────────────────────────────
 
+  const restoreCached = () => {
+    if (!lastCached) return;
+    setOrigin(lastCached.origin);
+    setDestination(lastCached.destination);
+    setPriority(lastCached.priority);
+    setResult(lastCached.result);
+    setError(null);
+    setLastCached(null);
+  };
+
   const handleAI = async (e: FormEvent) => {
     e.preventDefault();
     if (!origin.trim() || !destination.trim()) return;
@@ -182,6 +209,10 @@ export function MapPage() {
         geocodeQuery(destination.trim()),
       ]);
       setResult(data);
+      // Persist to localStorage so the last itinerary survives page reload / offline
+      const toCache: CachedRoute = { result: data, origin: origin.trim(), destination: destination.trim(), priority, timestamp: Date.now() };
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify(toCache)); } catch {}
+      setLastCached(null); // dismiss banner now that we have a fresh result
       if (originPos) setFlyTarget({ pos: originPos, zoom: 13 });
       if (originPos && destPos) {
         setRouteMarkers({ origin: originPos, dest: destPos });
@@ -307,6 +338,19 @@ export function MapPage() {
             <p>UrbanFlow suggère votre meilleur itinéraire multimodal</p>
           </div>
         </div>
+
+        {lastCached && !result && (
+          <div className={`cached-banner${isOffline ? " cached-banner--offline" : ""}`}>
+            <Clock size={14} aria-hidden="true" />
+            <span>
+              {isOffline ? "Hors ligne — " : ""}Dernier itinéraire : <strong>{lastCached.origin} → {lastCached.destination}</strong>
+            </span>
+            <button type="button" className="cached-restore" onClick={restoreCached}>Restaurer</button>
+            <button type="button" className="cached-dismiss" onClick={() => setLastCached(null)} aria-label="Fermer">
+              <X size={13} aria-hidden="true" />
+            </button>
+          </div>
+        )}
 
         <form className="ai-form" onSubmit={handleAI}>
           <div className="ai-inputs">
